@@ -1,24 +1,27 @@
+import streamlit as st
+import json
 import gspread
-from google.oauth2.service_account import Credentials
 import pandas as pd
+from google.oauth2.service_account import Credentials
 
-# Authenticate with Google Sheets
+# Authenticate with Google Sheets using Streamlit Secrets
 def authenticate_gsheets():
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)
+    creds_json = json.loads(st.secrets["google"]["credentials"])
+    creds = Credentials.from_service_account_info(
+        creds_json, 
+        scopes=["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+    )
     client = gspread.authorize(creds)
     return client
 
-# Fetch user data
+# Fetch user data from Google Sheets
 def get_users():
     client = authenticate_gsheets()
-    sheet = client.open("Project Management").worksheet("Users")  # Google Sheet Name
+    sheet = client.open("Project Management").worksheet("Users")
     data = sheet.get_all_records()
     return pd.DataFrame(data)
 
-
-import streamlit as st
-
+# Login System
 def login():
     users_df = get_users()
     st.title("Smart Project Management App")
@@ -40,49 +43,47 @@ def login():
                 st.experimental_rerun()
             else:
                 st.error("Invalid credentials")
-
     else:
         st.sidebar.button("Logout", on_click=lambda: st.session_state.update(logged_in=False))
-
 
 # Fetch tasks from Google Sheets
 def get_tasks():
     client = authenticate_gsheets()
-    sheet = client.open("ProjectManagement").worksheet("Tasks")
+    sheet = client.open("Project Management").worksheet("Tasks")
     data = sheet.get_all_records()
     return pd.DataFrame(data)
 
 # Add a new task
 def add_task(task_name, priority, due_date, assigned_to):
     client = authenticate_gsheets()
-    sheet = client.open("ProjectManagement").worksheet("Tasks")
-    sheet.append_row([None, task_name, priority, due_date, "Pending", assigned_to])
+    sheet = client.open("Project Management").worksheet("Tasks")
+    tasks_df = get_tasks()
+    new_task_id = len(tasks_df) + 1  # Auto-increment Task ID
+    sheet.append_row([new_task_id, task_name, priority, due_date, "Pending", assigned_to])
 
 # Update task status
 def update_task_status(task_id, status):
     client = authenticate_gsheets()
-    sheet = client.open("ProjectManagement").worksheet("Tasks")
+    sheet = client.open("Project Management").worksheet("Tasks")
     data = sheet.get_all_records()
-
     for i, row in enumerate(data, start=2):
         if row["Task ID"] == task_id:
-            sheet.update_cell(i, 5, status)  # Status column
+            sheet.update_cell(i, 5, status)  # Update Status column
             break
 
 # Delete a task
 def delete_task(task_id):
     client = authenticate_gsheets()
-    sheet = client.open("ProjectManagement").worksheet("Tasks")
+    sheet = client.open("Project Management").worksheet("Tasks")
     data = sheet.get_all_records()
-
     for i, row in enumerate(data, start=2):
         if row["Task ID"] == task_id:
             sheet.delete_rows(i)
             break
 
-
+# Task Dashboard UI
 def task_dashboard():
-    st.title("📌 Task Management Dashboard")
+    st.title("\ud83d\udccc Task Management Dashboard")
     
     tasks_df = get_tasks()
     if tasks_df.empty:
@@ -121,3 +122,13 @@ def task_dashboard():
             delete_task(delete_task_id)
             st.warning("Task deleted!")
             st.experimental_rerun()
+
+# Main function
+def main():
+    if "logged_in" not in st.session_state or not st.session_state.logged_in:
+        login()
+    else:
+        task_dashboard()
+
+if __name__ == "__main__":
+    main()
