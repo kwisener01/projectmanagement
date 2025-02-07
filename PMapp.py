@@ -12,7 +12,7 @@ def authenticate_gsheets():
 # Fetch user data
 def get_users():
     client = authenticate_gsheets()
-    sheet = client.open("ProjectManagement").worksheet("Users")  # Google Sheet Name
+    sheet = client.open("Project Management").worksheet("Users")  # Google Sheet Name
     data = sheet.get_all_records()
     return pd.DataFrame(data)
 
