@@ -5,6 +5,15 @@ import pandas as pd
 from google.oauth2.service_account import Credentials
 import hashlib
 
+# Check if secrets are configured
+def check_secrets_configured():
+    """Check if Google Sheets secrets are properly configured"""
+    try:
+        _ = st.secrets["google"]["credentials"]
+        return True
+    except (KeyError, FileNotFoundError):
+        return False
+
 # Authenticate with Google Sheets using Streamlit Secrets - CACHED
 @st.cache_resource
 def authenticate_gsheets():
@@ -200,8 +209,84 @@ def task_dashboard():
                 st.warning("Task deleted!")
                 st.rerun()  # Updated from deprecated experimental_rerun
 
+# Display setup instructions when secrets are missing
+def show_setup_instructions():
+    st.title("⚙️ Setup Required")
+    st.error("Google Sheets credentials not configured!")
+
+    st.markdown("""
+    ## Quick Setup Options
+
+    ### Option 1: Use SQLite Version (Recommended) ⭐
+    The SQLite version requires **no configuration** and is **100x faster**!
+
+    ```bash
+    streamlit run PMapp_sqlite.py
+    ```
+
+    ### Option 2: Configure Google Sheets
+
+    #### For Local Development:
+    1. Create `.streamlit/secrets.toml` in your project directory
+    2. Add your Google service account credentials:
+
+    ```toml
+    [google]
+    credentials = '''
+    {
+      "type": "service_account",
+      "project_id": "your-project-id",
+      "private_key_id": "...",
+      "private_key": "...",
+      "client_email": "...",
+      "client_id": "...",
+      "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+      "token_uri": "https://oauth2.googleapis.com/token",
+      "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+      "client_x509_cert_url": "..."
+    }
+    '''
+    ```
+
+    #### For Streamlit Cloud:
+    1. Go to your app dashboard
+    2. Click on "⚙️ Settings"
+    3. Click on "Secrets" in the left menu
+    4. Paste the same TOML content as above
+    5. Click "Save"
+
+    #### How to Get Google Service Account Credentials:
+    1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+    2. Create a new project or select existing one
+    3. Enable Google Sheets API and Google Drive API
+    4. Create a Service Account (IAM & Admin → Service Accounts)
+    5. Create and download a JSON key
+    6. Share your Google Sheet with the service account email
+
+    ---
+
+    ## 📚 More Information
+    - See [OPTIMIZATION_GUIDE.md](https://github.com/kwisener01/projectmanagement/blob/main/OPTIMIZATION_GUIDE.md) for details
+    - SQLite version is faster and easier to set up!
+    """)
+
+    st.info("💡 **Tip:** The SQLite version (PMapp_sqlite.py) works immediately without any setup!")
+
 # Main function
 def main():
+    # Configure page
+    st.set_page_config(
+        page_title="Project Management",
+        page_icon="📊",
+        layout="wide"
+    )
+
+    # Check if secrets are configured
+    if not check_secrets_configured():
+        show_setup_instructions()
+        return
+
+    # Normal app flow
     if "logged_in" not in st.session_state or not st.session_state.logged_in:
         login()
     else:

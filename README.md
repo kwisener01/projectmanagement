@@ -55,7 +55,7 @@ projectmanagement/
 
 ## 🔧 Installation
 
-### For SQLite Version (Minimal)
+### For SQLite Version (Minimal - Recommended)
 ```bash
 pip install streamlit pandas
 ```
@@ -65,7 +65,7 @@ pip install streamlit pandas
 pip install -r requirements.txt
 ```
 
-Then configure `.streamlit/secrets.toml` with your Google credentials.
+Then configure Google Sheets credentials. See [SETUP.md](SETUP.md) for detailed instructions.
 
 ## 📖 Usage
 
@@ -102,11 +102,9 @@ streamlit run PMapp.py
 
 ## 📚 Documentation
 
-See [OPTIMIZATION_GUIDE.md](OPTIMIZATION_GUIDE.md) for:
-- Detailed performance analysis
-- Migration guides
-- Alternative backend options (PostgreSQL, Supabase, Firebase)
-- Best practices and recommendations
+- **[SETUP.md](SETUP.md)** - Complete setup guide for both versions
+- **[OPTIMIZATION_GUIDE.md](OPTIMIZATION_GUIDE.md)** - Performance analysis, migration guides, alternative backends
+- Both versions have detailed inline code comments
 
 ## 🛣️ Roadmap
 
