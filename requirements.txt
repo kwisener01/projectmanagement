@@ -1,8 +1,19 @@
-streamlit
-pandas
-matplotlib
-seaborn
-xlsxwriter
-openpyxl
-gspread
-oauth2client
+# Core dependencies
+streamlit>=1.28.0
+pandas>=2.0.0
+
+# For Google Sheets version (PMapp.py)
+gspread>=5.11.0
+google-auth>=2.23.0
+google-auth-oauthlib>=1.1.0
+
+# Visualization (optional)
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Excel support (optional)
+xlsxwriter>=3.1.0
+openpyxl>=3.1.0
+
+# Note: SQLite version (PMapp_sqlite.py) requires no additional dependencies
+# SQLite is built into Python standard library
